@@ -1,0 +1,58 @@
+{
+  "name": "erb-commentor",
+  "displayName": "erb-commentor",
+  "description": "Commenting erb made easier.",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:erb"
+  ],
+  "main": "./extension.js",
+  "contributes": {
+    "languages": [
+      {
+          "id": "erb",
+          "extensions": [".erb"],
+          "aliases": ["ERB", "Embedded Ruby"]
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "erb-commentor.toggleErbComment",
+        "key": "cmd+/",
+        "when": "editorLangId == erb"
+      },
+      {
+        "command": "erb-commentor.toggleErbComment",
+        "key": "ctrl+/",
+        "when": "editorLangId == erb",
+        "win": "ctrl+/",
+        "linux": "ctrl+/"
+      }
+    ],
+    "commands": [
+      {
+        "command": "erb-commentor.toggleErbComment",
+        "title": "Toggle ERB Comment"
+      }
+    ]
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "pretest": "npm run lint",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.96.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "eslint": "^9.16.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
+  }
+}
