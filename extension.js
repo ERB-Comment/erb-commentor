@@ -42,17 +42,35 @@ function activate(context) {
 function handleSelectedText(document, editBuilder, selection) {
   const range = new vscode.Range(selection.start, selection.end);
   const text = document.getText(range);
-  const leadingWhitespace = text.match(/^\s*/)?.[0] || "";
+  const lines = text.split('\n');
 
-  if (text.trim().startsWith("<!--") && text.trim().endsWith("-->")) {
-    // Uncomment: Remove <!-- and -->
-    const uncommented = text.trim().slice(4, -3).trim();
-    editBuilder.replace(range, `${leadingWhitespace}${uncommented}`);
-  } else {
-    // Comment: Wrap with <!-- -->
-    const commented = `${leadingWhitespace}<!-- ${text.trim()} -->`;
-    editBuilder.replace(range, commented);
-  }
+  // Loop through all lines and handle each one
+  const processedLines = lines.map(line => {
+    // Check if line is already commented
+    if (line.includes('<%#')) {
+      // Uncomment: Check if it's HTML wrapped in ERB comment
+      if (line.match(/<%#\s*<.*>\s*%>/)) {
+        // HTML wrapped in ERB: remove <%# and %>
+        return line.replace(/<%#\s*(.*?)\s*%>/, '$1');
+      } else {
+        // ERB comment: remove <%# prefix only
+        return line.replace(/<%#\s*/, '');
+      }
+    } else {
+      // Comment: Check if line has ERB tags
+      if (line.includes('<%')) {
+        // ERB line: add <%# prefix
+        return line.replace(/<%=?-?/, "<%# $&");
+      } else if (line.trim().length > 0) {
+        // HTML line: wrap with <%# %>
+        const leadingWS = line.match(/^\s*/)?.[0] || "";
+        return `${leadingWS}<%# ${line.trim()} %>`;
+      }
+      return line; // Empty line
+    }
+  });
+
+  editBuilder.replace(range, processedLines.join('\n'));
 }
 
 function handleSingleLine(document, editBuilder, selection) {
@@ -60,6 +78,12 @@ function handleSingleLine(document, editBuilder, selection) {
   const lineText = line.text;
   const cursorPos = selection.start.character;
   const leadingWS = lineText.match(/^\s*/)?.[0] || "";
+
+  // Check if line is already commented first
+  if (lineText.includes('<%#')) {
+    toggleHtmlComment(lineText, leadingWS, editBuilder, line);
+    return;
+  }
 
   const startIndex = lineText.indexOf("<%");
   const endIndex = lineText.indexOf("%>");
@@ -90,27 +114,33 @@ function handleSingleLine(document, editBuilder, selection) {
 
 function toggleErbComment(lineText, editBuilder, line) {
   if (lineText.includes("<%#")) {
-    // Already commented => remove '#'
-    const uncommented = lineText.replace("<%#", "<%");
+    // Already commented => remove the <%# prefix
+    const uncommented = lineText.replace("<%# ", "");
     editBuilder.replace(line.range, uncommented);
   } else {
-    // Insert '#' right after <%
-    // Regex covers <% or <%= or <%-, etc.
-    const commented = lineText.replace(/<%=?-?/, "<%#");
+    // Insert '<%# ' as prefix before the existing ERB tag
+    const commented = lineText.replace(/<%=?-?/, "<%# $&");
     editBuilder.replace(line.range, commented);
   }
 }
 
 function toggleHtmlComment(lineText, leadingWS, editBuilder, line) {
-  const trimmed = lineText.trim();
-
-  if (trimmed.startsWith("<!--") && trimmed.endsWith("-->")) {
-    // Already in <!-- --> => unwrap
-    const uncommented = trimmed.slice(4, -3).trim();
-    editBuilder.replace(line.range, leadingWS + uncommented);
+  // Use the exact same logic as handleSelectedText
+  if (lineText.includes('<%#')) {
+    // Check if it's HTML wrapped in ERB comment (same regex as handleSelectedText)
+    if (lineText.match(/<%#\s*<.*>\s*%>/)) {
+      // HTML wrapped in ERB: remove <%# and %> (same regex as handleSelectedText)
+      const uncommented = lineText.replace(/<%#\s*(.*?)\s*%>/, '$1');
+      editBuilder.replace(line.range, uncommented);
+    } else {
+      // ERB comment: remove <%# prefix only (same logic as handleSelectedText)
+      const uncommented = lineText.replace(/<%#\s*/, '');
+      editBuilder.replace(line.range, uncommented);
+    }
   } else {
-    // Wrap with <!-- -->
-    const commented = `${leadingWS}<!-- ${trimmed} -->`;
+    // Wrap with <%# %>
+    const trimmed = lineText.trim();
+    const commented = `${leadingWS}<%# ${trimmed} %>`;
     editBuilder.replace(line.range, commented);
   }
 }
@@ -118,7 +148,7 @@ function toggleHtmlComment(lineText, leadingWS, editBuilder, line) {
 /**
  * This method is called when your extension is deactivated.
  */
-function deactivate() {}
+function deactivate() { }
 
 module.exports = {
   activate,

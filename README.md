@@ -2,35 +2,76 @@
 
 A super-simple extension to toggle ERB comments or HTML comments in `.erb` files.
 
-## Features
-
-- **Toggle ERB comment**: Automatically insert `#` to turn `<%` into `<%#` (or remove it if it’s already there).
-- **HTML comment toggle**: Wrap an entire line (or selected text) in `<!-- ... -->`.
-
-## How It Works
-
-- **Single-line**:  
-  - If your cursor is inside `<% ... %>`, it toggles `<%#`.  
-  - If your cursor is outside, it toggles `<!-- ... -->`.  
-- **Multi-line ERB**:  
-  - If `<%` is present on a line but there’s no closing `%>`, it treats it as multi-line and just toggles `<%#`.  
-
-## Keybindings
-
+## Keyboard Shortcut
 - **Mac**: `Cmd + /`
 - **Windows/Linux**: `Ctrl + /`
 
-*(You can also run the command from the Command Palette by searching for "Toggle ERB Comment.")*
+## Use Cases
 
-## Requirements
+### 1. Single Line (No Highlight)
+**ERB Tag**: Place cursor inside the ERB tag
+```erb
+<%= form.text_field :title %>  →  <%#= form.text_field :title %>
+```
 
-- **VS Code 1.96.0+** (as specified in `engines`).
+**HTML Tag**: Place cursor outside the html tag
+```erb
+<div class="container">  →  <%# <div class="container"> %>
+```
 
-## Installation
+### 2. Single ERB Tag (Multiline)
+**Place cursor on the first line of the ERB tag**
+```erb
+<%= image_tag article.cover.attached? ? article.cover : "empty-cover.png", 
+    alt: "Article cover", class: "article__cover margin-none", 
+    style: "--cover-height: 60vh", data: { upload_preview_target: "image" } %>
 
-1. Install from the VS Code Marketplace (search for "**ERB Snip Comment**") or grab the `.vsix` file from Releases.
-2. Open an `.erb` file and try `Cmd + /` or `Ctrl + /` to toggle comments!
+→
 
+<%#= image_tag article.cover.attached? ? article.cover : "empty-cover.png", 
+    alt: "Article cover", class: "article__cover margin-none", 
+    style: "--cover-height: 60vh", data: { upload_preview_target: "image" } %>
+```
+
+### 3. Multiple Lines (Mixed ERB and HTML)
+**Highlight and comment**
+```erb
+<div class="flex align-center gap txt-medium">
+  <%= translation_button(:book_title) %>
+  <h1 class="txt-xx-large margin-none full-width">
+    <%= form.text_field :title, required: true, autofocus: true %>
+  </h1>
+</div>
+
+→
+
+<%# <div class="flex align-center gap txt-medium"> %>
+<%#= translation_button(:book_title) %>
+<%# <h1 class="txt-xx-large margin-none full-width"> %>
+<%#= form.text_field :title, required: true, autofocus: true %>
+<%# </h1> %>
+<%# </div> %>
+```
+
+### 4. Nested Multiline ERB Tags
+**Comment the single multiline ERB tag separately**
+```erb
+<div class="form">
+  <%= form_with model: @user, local: true, 
+      html: { class: "user-form", data: { turbo: false } } do |f| %>
+    <%= f.text_field :name %>
+  <% end %>
+</div>
+
+→ (comment the multiline ERB tag separately)
+
+<div class="form">
+  <%#= form_with model: @user, local: true, 
+      html: { class: "user-form", data: { turbo: false } } do |f| %>
+    <%= f.text_field :name %>
+  <% end %>
+</div>
+```
 ## Release Notes
 
 ### 1.0.0
