@@ -2,7 +2,7 @@
   "name": "erb-commentor",
   "displayName": "ERB Simple Commentor",
   "description": "Commenting erb made easier.",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "engines": {
     "vscode": "^1.96.0"
   },

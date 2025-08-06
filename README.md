@@ -72,7 +72,3 @@ A super-simple extension to toggle ERB comments or HTML comments in `.erb` files
   <% end %>
 </div>
 ```
-## Release Notes
-
-### 1.0.0
-- Initial release with basic toggling for single and multi-line `.erb` code.
