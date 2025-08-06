@@ -10,7 +10,8 @@
   "publisher": "tykealy",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ERB-Comment/erb-commentor"},
+    "url": "https://github.com/ERB-Comment/erb-commentor"
+  },
   "categories": [
     "Other"
   ],
@@ -21,9 +22,14 @@
   "contributes": {
     "languages": [
       {
-          "id": "erb",
-          "extensions": [".erb"],
-          "aliases": ["ERB", "Embedded Ruby"]
+        "id": "erb",
+        "extensions": [
+          ".erb"
+        ],
+        "aliases": [
+          "ERB",
+          "Embedded Ruby"
+        ]
       }
     ],
     "keybindings": [
